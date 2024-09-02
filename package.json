@@ -1,0 +1,25 @@
+{
+  "name": "yahoo-finance-scraper",
+  "version": "1.0.0",
+  "description": "A limited scope Yahoo Finance scraper",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsmcd/yahoo-finance-scraper.git"
+  },
+  "author": "Logan Scott McDaniel lsmcd@pm.me",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lsmcd/yahoo-finance-scraper/issues"
+  },
+  "homepage": "https://github.com/lsmcd/yahoo-finance-scraper#readme",
+  "dependencies": {
+    "puppeteer": "^23.2.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
