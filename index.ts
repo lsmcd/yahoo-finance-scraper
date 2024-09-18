@@ -16,6 +16,12 @@ type quote = {
     priceChangePercent: string;
     time: string;
   };
+  priceChart: priceChart[];
+};
+
+type priceChart = {
+  price: string;
+  time: string;
 };
 
 /**
@@ -50,7 +56,10 @@ class YahooFinanceScraper {
    * @param {string} ticker - The stocks ticker string as used in the url.
    * @returns Promise<quote>
    */
-  public static async fetchQuote(ticker: string): Promise<quote> {
+  public static async fetchQuote(
+    ticker: string,
+    priceChart?: string,
+  ): Promise<quote> {
     if (!this.browser) {
       throw Error(
         "Must initialize YahooFinanceScraper with async init() method and don't forget exit()",
@@ -61,7 +70,7 @@ class YahooFinanceScraper {
 
     await page.goto(`https://finance.yahoo.com/quote/${ticker}/`);
 
-    await page.setViewport({ width: 1080, height: 1024 });
+    await page.setViewport({ width: 1920, height: 1024 });
 
     const quote = await page.evaluate(() => {
       /* INFO: The following comments are there because if the scraper malfunctions 
@@ -90,6 +99,7 @@ class YahooFinanceScraper {
             // @ts-expect-error: Object is possibly 'null'.
             time: price.parentNode.parentNode.children[1].textContent,
           },
+          priceChart: [],
         };
         return data;
       } catch (err) {
@@ -97,9 +107,43 @@ class YahooFinanceScraper {
       }
     });
 
-    await page.close();
-
     if (quote) {
+      // WARN: EXTREMELY SLOW
+      if (priceChart) {
+        try {
+          for (let i = 0; i < 1200; i++) {
+            await page.hover("div.stx-subholder");
+            await page.mouse.move(360 + i, 500);
+            const element = await page.$("table.hu-tooltip > tbody");
+            if (!element) break;
+            if (await element.isVisible()) {
+              const tempPriceChart = await page.evaluate((): priceChart => {
+                const tbody = document.querySelector(
+                  "table.hu-tooltip > tbody",
+                );
+                return {
+                  // @ts-expect-error: Object is possibly 'null'.
+                  price: tbody.children[1].children[1].textContent,
+                  // @ts-expect-error: Object is possibly 'null'.
+                  time: tbody.children[0].children[1].textContent,
+                };
+              });
+              if (
+                quote.priceChart[quote.priceChart.length - 1] &&
+                tempPriceChart.time ===
+                  quote.priceChart[quote.priceChart.length - 1].time
+              ) {
+                continue;
+              }
+              quote.priceChart.push(tempPriceChart);
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      await page.close();
       return quote;
     } else {
       throw new Error("Failed to retrieve quote");
