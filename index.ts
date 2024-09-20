@@ -111,7 +111,45 @@ class YahooFinanceScraper {
       // WARN: EXTREMELY SLOW
       if (priceChart) {
         try {
-          for (let i = 0; i < 1200; i++) {
+          let chartResolution: number = 1;
+
+          switch (priceChart) {
+            case "1D":
+              chartResolution = 1;
+              await page.click("button#tab-1d-qsp");
+              break;
+            case "5D":
+              chartResolution = 1;
+              await page.click("button#tab-5d-qsp");
+              break;
+            case "3M":
+              chartResolution = 10;
+              await page.click("button#tab-3m");
+              break;
+            case "6M":
+              chartResolution = 7;
+              await page.click("button#tab-6m");
+              break;
+            case "YTD":
+              chartResolution = 3;
+              await page.click("button#tab-YTD");
+              break;
+            case "1Y":
+              chartResolution = 2;
+              await page.click("button#tab-1y");
+              break;
+            case "5Y":
+              chartResolution = 2;
+              await page.click("button#tab-5y");
+              break;
+            case "ALL":
+              chartResolution = 1;
+              await page.click("button#tab-Max");
+              break;
+          }
+
+          console.log(chartResolution);
+          for (let i = 0; i < 1200; i += chartResolution) {
             await page.hover("div.stx-subholder");
             await page.mouse.move(360 + i, 500);
             const element = await page.$("table.hu-tooltip > tbody");
@@ -137,7 +175,9 @@ class YahooFinanceScraper {
               }
               quote.priceChart.push(tempPriceChart);
             }
+            console.log(i);
           }
+          console.log(quote);
         } catch (err) {
           console.error(err);
         }
@@ -150,5 +190,11 @@ class YahooFinanceScraper {
     }
   }
 }
+
+await YahooFinanceScraper.init();
+
+await YahooFinanceScraper.fetchQuote("NVDA", "3M");
+
+await YahooFinanceScraper.exit();
 
 export default YahooFinanceScraper;
