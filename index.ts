@@ -154,21 +154,28 @@ class YahooFinanceScraper {
           }
 
           console.log(chartResolution);
+          // 29-33s
           for (let i = 0; i < 1200; i += chartResolution) {
             await page.hover("div.stx-subholder");
             await page.mouse.move(360 + i, 500);
+
             const element = await page.$("table.hu-tooltip > tbody");
+
             if (!element) break;
             if (await element.isVisible()) {
               const tempPriceChart = await page.evaluate((): priceChart => {
-                const tbody = document.querySelector(
-                  "table.hu-tooltip > tbody",
-                );
+                // const tbody = document.querySelector(
+                //   "table.hu-tooltip > tbody",
+                // );
                 return {
                   // @ts-expect-error: Object is possibly 'null'.
-                  price: tbody.children[1].children[1].textContent,
+                  price: document.querySelector(
+                    `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
+                  ).textContent,
                   // @ts-expect-error: Object is possibly 'null'.
-                  time: tbody.children[0].children[1].textContent,
+                  time: document.querySelector(
+                    `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
+                  ).textContent,
                 };
               });
               if (
@@ -180,7 +187,6 @@ class YahooFinanceScraper {
               }
               quote.priceChart.push(tempPriceChart);
             }
-            console.log(i);
           }
           console.log(quote);
         } catch (err) {
@@ -196,10 +202,10 @@ class YahooFinanceScraper {
   }
 }
 
-await YahooFinanceScraper.init();
-
-await YahooFinanceScraper.fetchQuote("NVDA", "3M");
-
-await YahooFinanceScraper.exit();
+// await YahooFinanceScraper.init();
+//
+// await YahooFinanceScraper.fetchQuote("NVDA", "3M");
+//
+// await YahooFinanceScraper.exit();
 
 export default YahooFinanceScraper;

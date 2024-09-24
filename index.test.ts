@@ -28,7 +28,7 @@ describe("Retrieve Quotes", () => {
     expect(quote.livePrice.price).toBeTruthy();
   }, 300000);
   test("Retrieves Nvidia's current stock chart", async () => {
-    const quote = await YahooFinanceScraper.fetchQuote("NVDA", "true");
+    const quote = await YahooFinanceScraper.fetchQuote("NVDA", "3M");
     expect(quote.priceChart).toBeTruthy();
   }, 300000);
 });
