@@ -153,6 +153,8 @@ class YahooFinanceScraper {
               break;
           }
 
+          const tempPriceChart: priceChart[] = [];
+
           for (let i = 360; i < 1200; i += chartResolution) {
             await page.hover("div.stx-subholder");
             await page.mouse.move(i, 500);
@@ -160,28 +162,28 @@ class YahooFinanceScraper {
 
             if (!element) break;
             if (await element.isVisible()) {
-              const tempPriceChart = await page.evaluate((): priceChart => {
-                return {
-                  // @ts-expect-error: Object is possibly 'null'.
-                  price: document.querySelector(
-                    `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
-                  ).textContent,
-                  // @ts-expect-error: Object is possibly 'null'.
-                  time: document.querySelector(
-                    `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
-                  ).textContent,
-                };
-              });
-              if (
-                quote.priceChart[quote.priceChart.length - 1] &&
-                tempPriceChart.time ===
-                  quote.priceChart[quote.priceChart.length - 1].time
-              ) {
-                continue;
-              }
-              quote.priceChart.push(tempPriceChart);
+              tempPriceChart.push(
+                await page.evaluate((): priceChart => {
+                  return {
+                    // @ts-expect-error: Object is possibly 'null'.
+                    price: document.querySelector(
+                      `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
+                    ).textContent,
+                    // @ts-expect-error: Object is possibly 'null'.
+                    time: document.querySelector(
+                      `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
+                    ).textContent,
+                  };
+                }),
+              );
             }
           }
+          tempPriceChart.map((priceChart, index, array) => {
+            // index > 0 is to remove the first value which is often wrong and prevent negative indexes
+            if (index > 0 && priceChart.time !== array[index - 1].time) {
+              quote.priceChart.push(priceChart);
+            }
+          });
         } catch (err) {
           console.error(err);
         }
