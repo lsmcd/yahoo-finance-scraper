@@ -164,11 +164,11 @@ class YahooFinanceScraper {
                 return {
                   // @ts-expect-error: Object is possibly 'null'.
                   price: document.querySelector(
-                    `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
+                    `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
                   ).textContent,
                   // @ts-expect-error: Object is possibly 'null'.
                   time: document.querySelector(
-                    `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
+                    `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
                   ).textContent,
                 };
               });
