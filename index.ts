@@ -153,9 +153,9 @@ class YahooFinanceScraper {
               break;
           }
 
-          for (let i = 0; i < 1200; i += chartResolution) {
+          for (let i = 360; i < 1200; i += chartResolution) {
             await page.hover("div.stx-subholder");
-            await page.mouse.move(360 + i, 500);
+            await page.mouse.move(i, 500);
             const element = await page.$("table.hu-tooltip > tbody");
 
             if (!element) break;
