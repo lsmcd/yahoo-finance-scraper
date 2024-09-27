@@ -178,10 +178,19 @@ class YahooFinanceScraper {
               );
             }
           }
+          let pastInitialValues = false;
           tempPriceChart.map((priceChart, index, array) => {
             // index > 0 is to remove the first value which is often wrong and prevent negative indexes
-            if (index > 0 && priceChart.time !== array[index - 1].time) {
+            const noDuplicateInitialValues =
+              (index > 0 && array[0].time !== priceChart.time) ||
+              pastInitialValues;
+
+            if (
+              noDuplicateInitialValues &&
+              priceChart.time !== array[index - 1].time
+            ) {
               quote.priceChart.push(priceChart);
+              pastInitialValues = true;
             }
           });
         } catch (err) {
