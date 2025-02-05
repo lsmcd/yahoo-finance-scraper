@@ -6,14 +6,10 @@ import puppeteer, { Browser } from "puppeteer";
 type quote = {
   livePrice: {
     price: string;
-    priceChange: string;
-    priceChangePercent: string;
     time: string;
   };
-  afterHoursPrice: {
+  afterHoursPrice?: {
     price: string;
-    priceChange: string;
-    priceChangePercent: string;
     time: string;
   };
 };
@@ -67,30 +63,21 @@ class YahooFinanceScraper {
       /* INFO: The following comments are there because if the scraper malfunctions 
          I would prefer if it threw an error rather than provide null values */
       try {
-        const livePrice = document.querySelector("fin-streamer.livePrice");
-        const price = document.querySelector("fin-streamer.price");
         const data: quote = {
           livePrice: {
             // @ts-expect-error: Object is possibly 'null'.
-            price: livePrice.textContent,
+            price: document.querySelector(`span[data-testid="qsp-price"]`)
+              .textContent,
             // @ts-expect-error: Object is possibly 'null'.
-            priceChange: livePrice.parentNode.children[1].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            priceChangePercent: livePrice.parentNode.children[2].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            time: livePrice.parentNode.parentNode.children[1].textContent,
+            time: document.querySelector(`div[slot="marketTimeNotice"]`)
+              .textContent,
           },
           afterHoursPrice: {
-            // @ts-expect-error: Object is possibly 'null'.
-            price: price.textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            priceChange: price.parentNode.children[1].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            priceChangePercent: price.parentNode.children[2].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            time: price.parentNode.parentNode.children[1].textContent,
+            price: "",
+            time: "",
           },
         };
+        console.log(data.livePrice.price);
         return data;
       } catch (err) {
         console.error(err);

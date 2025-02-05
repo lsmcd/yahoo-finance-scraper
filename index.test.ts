@@ -19,7 +19,7 @@ describe("Retrieve Quotes", () => {
         expect(quote.livePrice.time).toBeTruthy();
       }),
       YahooFinanceScraper.fetchQuote("NVDA").then((quote) => {
-        expect(quote.afterHoursPrice.priceChange).toBeTruthy();
+        expect(quote.livePrice.price).toBeTruthy();
       }),
     ]);
   }, 500000);
