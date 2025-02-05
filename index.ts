@@ -4,11 +4,11 @@ import puppeteer, { Browser } from "puppeteer";
  * @type {quote}
  */
 type quote = {
-  livePrice: {
+  regularTrading: {
     price: string;
     time: string;
   };
-  afterHoursPrice?: {
+  extendedTrading?: {
     price: string;
     time: string;
   };
@@ -64,7 +64,7 @@ class YahooFinanceScraper {
          I would prefer if it threw an error rather than provide null values */
       try {
         const data: quote = {
-          livePrice: {
+          regularTrading: {
             // @ts-expect-error: Object is possibly 'null'.
             price: document.querySelector(`span[data-testid="qsp-price"]`)
               .textContent,
@@ -72,12 +72,15 @@ class YahooFinanceScraper {
             time: document.querySelector(`div[slot="marketTimeNotice"]`)
               .textContent,
           },
-          afterHoursPrice: {
-            price: "",
-            time: "",
+          extendedTrading: {
+            // @ts-expect-error: Object is possibly 'null'.
+            price: document.querySelector(`span[data-testid="qsp-post-price"]`)
+              .textContent,
+            // @ts-expect-error: Object is possibly 'null'.
+            time: document.querySelectorAll(`div[slot="marketTimeNotice"]`)[1]
+              .textContent,
           },
         };
-        console.log(data.livePrice.price);
         return data;
       } catch (err) {
         console.error(err);
