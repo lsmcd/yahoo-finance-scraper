@@ -4,16 +4,12 @@ import puppeteer, { Browser } from "puppeteer";
  * @type {quote}
  */
 type quote = {
-  livePrice: {
+  regularTrading: {
     price: string;
-    priceChange: string;
-    priceChangePercent: string;
     time: string;
   };
-  afterHoursPrice: {
+  extendedTrading?: {
     price: string;
-    priceChange: string;
-    priceChangePercent: string;
     time: string;
   };
 };
@@ -67,28 +63,22 @@ class YahooFinanceScraper {
       /* INFO: The following comments are there because if the scraper malfunctions 
          I would prefer if it threw an error rather than provide null values */
       try {
-        const livePrice = document.querySelector("fin-streamer.livePrice");
-        const price = document.querySelector("fin-streamer.price");
         const data: quote = {
-          livePrice: {
+          regularTrading: {
             // @ts-expect-error: Object is possibly 'null'.
-            price: livePrice.textContent,
+            price: document.querySelector(`span[data-testid="qsp-price"]`)
+              .textContent,
             // @ts-expect-error: Object is possibly 'null'.
-            priceChange: livePrice.parentNode.children[1].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            priceChangePercent: livePrice.parentNode.children[2].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            time: livePrice.parentNode.parentNode.children[1].textContent,
+            time: document.querySelector(`div[slot="marketTimeNotice"]`)
+              .textContent,
           },
-          afterHoursPrice: {
+          extendedTrading: {
             // @ts-expect-error: Object is possibly 'null'.
-            price: price.textContent,
+            price: document.querySelector(`span[data-testid="qsp-post-price"]`)
+              .textContent,
             // @ts-expect-error: Object is possibly 'null'.
-            priceChange: price.parentNode.children[1].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            priceChangePercent: price.parentNode.children[2].textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            time: price.parentNode.parentNode.children[1].textContent,
+            time: document.querySelectorAll(`div[slot="marketTimeNotice"]`)[1]
+              .textContent,
           },
         };
         return data;
