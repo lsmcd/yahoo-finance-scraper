@@ -50,7 +50,7 @@ class YahooFinanceScraper {
   /**
    * Async method that fetches a quote.
    * @param {string} ticker - The stocks ticker string as used in the url.
-   * @param {string} [priceChart=3M] - Use any true string to include price chart. Set time frame with strings "1D", "5D", "3M", "6M", "YTD", "1Y", "5Y", "ALL".
+   * @param {string} [priceChart=6M] - Use any true string to include price chart. Set time frame with strings "1D", "5D", "3M", "6M", "YTD", "1Y", "5Y", "ALL".
    * @returns Promise<quote>
    */
   public static async fetchQuote(
@@ -113,10 +113,6 @@ class YahooFinanceScraper {
               chartResolution = 1;
               await page.click("button#tab-5d-qsp");
               break;
-            case "3M":
-              chartResolution = 10;
-              await page.click("button#tab-3m");
-              break;
             case "6M":
               chartResolution = 7;
               await page.click("button#tab-6m");
@@ -139,7 +135,7 @@ class YahooFinanceScraper {
               break;
             default:
               chartResolution = 10;
-              await page.click("button#tab-3m");
+              await page.click("button#tab-6m");
               break;
           }
 
