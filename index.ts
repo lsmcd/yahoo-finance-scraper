@@ -72,123 +72,117 @@ class YahooFinanceScraper {
     const quote = await page.evaluate(() => {
       /* INFO: The following comments are there because if the scraper malfunctions 
          I would prefer if it threw an error rather than provide null values */
+      let extendedTrading = {};
       try {
-        const data: quote = {
-          regularTrading: {
-            // @ts-expect-error: Object is possibly 'null'.
-            price: document.querySelector(`span[data-testid="qsp-price"]`)
-              .textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            time: document.querySelector(`div[slot="marketTimeNotice"]`)
-              .textContent,
-          },
-          extendedTrading: {
-            // @ts-expect-error: Object is possibly 'null'.
-            price: document.querySelector(`span[data-testid="qsp-post-price"]`)
-              .textContent,
-            // @ts-expect-error: Object is possibly 'null'.
-            time: document.querySelectorAll(`div[slot="marketTimeNotice"]`)[1]
-              .textContent,
-          },
-          priceChart: [],
+        extendedTrading = {
+          // @ts-expect-error: Object is possibly 'null'.
+          price: document.querySelector(`span[data-testid="qsp-post-price"]`)
+            .textContent,
+          // // @ts-expect-error: Object is possibly 'null'.
+          time: document.querySelectorAll(`div[slot="marketTimeNotice"]`)[1]
+            .textContent,
         };
-        return data;
       } catch (err) {
         console.error(err);
       }
+      const data: quote = {
+        regularTrading: {
+          // @ts-expect-error: Object is possibly 'null'.
+          price: document.querySelector(`span[data-testid="qsp-price"]`)
+            .textContent,
+          // @ts-expect-error: Object is possibly 'null'.
+          time: document.querySelector(`div[slot="marketTimeNotice"]`)
+            .textContent,
+          extendedTrading: extendedTrading,
+        },
+        priceChart: [],
+      };
+      if (data) return data;
+      else throw new Error("Failed to scrape");
     });
 
-    if (quote) {
-      // WARN: EXTREMELY SLOW
-      if (priceChart) {
-        try {
-          let chartResolution: number = 1;
+    // WARN: EXTREMELY SLOW
+    if (priceChart) {
+      let chartResolution: number = 1;
 
-          switch (priceChart) {
-            case "1D":
-              chartResolution = 1;
-              await page.click("button#tab-1d-qsp");
-              break;
-            case "5D":
-              chartResolution = 1;
-              await page.click("button#tab-5d-qsp");
-              break;
-            case "6M":
-              chartResolution = 7;
-              await page.click("button#tab-6m");
-              break;
-            case "YTD":
-              chartResolution = 3;
-              await page.click("button#tab-YTD");
-              break;
-            case "1Y":
-              chartResolution = 2;
-              await page.click("button#tab-1y");
-              break;
-            case "5Y":
-              chartResolution = 2;
-              await page.click("button#tab-5y");
-              break;
-            case "ALL":
-              chartResolution = 1;
-              await page.click("button#tab-Max");
-              break;
-            default:
-              chartResolution = 10;
-              await page.click("button#tab-6m");
-              break;
-          }
-
-          const tempPriceChart: priceChart[] = [];
-
-          for (let i = 360; i < 1200; i += chartResolution) {
-            await page.hover("div.stx-subholder");
-            await page.mouse.move(i, 500);
-            const element = await page.$("table.hu-tooltip > tbody");
-
-            if (!element) break;
-            if (await element.isVisible()) {
-              tempPriceChart.push(
-                await page.evaluate((): priceChart => {
-                  return {
-                    // @ts-expect-error: Object is possibly 'null'.
-                    price: document.querySelector(
-                      `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
-                    ).textContent,
-                    // @ts-expect-error: Object is possibly 'null'.
-                    time: document.querySelector(
-                      `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
-                    ).textContent,
-                  };
-                }),
-              );
-            }
-          }
-          let pastInitialValues = false;
-          tempPriceChart.map((priceChart, index, array) => {
-            // index > 0 is to remove the first value which is often wrong and prevent negative indexes
-            const noDuplicateInitialValues =
-              (index > 0 && array[0].time !== priceChart.time) ||
-              pastInitialValues;
-
-            if (
-              noDuplicateInitialValues &&
-              priceChart.time !== array[index - 1].time
-            ) {
-              quote.priceChart.push(priceChart);
-              pastInitialValues = true;
-            }
-          });
-        } catch (err) {
-          console.error(err);
-        }
+      switch (priceChart) {
+        case "1D":
+          chartResolution = 1;
+          await page.click("button#tab-1d-qsp");
+          break;
+        case "5D":
+          chartResolution = 1;
+          await page.click("button#tab-5d-qsp");
+          break;
+        case "6M":
+          chartResolution = 7;
+          await page.click("button#tab-6m");
+          break;
+        case "YTD":
+          chartResolution = 3;
+          await page.click("button#tab-YTD");
+          break;
+        case "1Y":
+          chartResolution = 2;
+          await page.click("button#tab-1y");
+          break;
+        case "5Y":
+          chartResolution = 2;
+          await page.click("button#tab-5y");
+          break;
+        case "ALL":
+          chartResolution = 1;
+          await page.click("button#tab-Max");
+          break;
+        default:
+          chartResolution = 10;
+          await page.click("button#tab-6m");
+          break;
       }
 
-      await page.close();
-      return quote;
-    } else {
-      throw new Error("Failed to retrieve quote");
+      const tempPriceChart: priceChart[] = [];
+
+      for (let i = 360; i < 1200; i += chartResolution) {
+        await page.hover("div.stx-subholder");
+        await page.mouse.move(i, 500);
+        const element = await page.$("table.hu-tooltip > tbody");
+
+        if (!element) break;
+        if (await element.isVisible()) {
+          tempPriceChart.push(
+            await page.evaluate((): priceChart => {
+              return {
+                // @ts-expect-error: Object is possibly 'null'.
+                price: document.querySelector(
+                  `tr[hu-tooltip-field="Close"] > td.hu-tooltip-value`,
+                ).textContent,
+                // @ts-expect-error: Object is possibly 'null'.
+                time: document.querySelector(
+                  `tr[hu-tooltip-field="DT"] > td.hu-tooltip-value`,
+                ).textContent,
+              };
+            }),
+          );
+        }
+      }
+      let pastInitialValues = false;
+      tempPriceChart.map((priceChart, index, array) => {
+        // index > 0 is to remove the first value which is often wrong and prevent negative indexes
+        const noDuplicateInitialValues =
+          (index > 0 && array[0].time !== priceChart.time) || pastInitialValues;
+
+        if (
+          noDuplicateInitialValues &&
+          priceChart.time !== array[index - 1].time
+        ) {
+          quote.priceChart.push(priceChart);
+          pastInitialValues = true;
+        }
+      });
     }
+
+    await page.close();
+    return quote;
   }
 }
 
